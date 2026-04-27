@@ -1,0 +1,93 @@
+// Direct MongoDB Shell Script
+// Run this in MongoDB Compass or mongosh shell
+
+// Switch to the database
+use poms;
+
+// Clear existing subscribers (optional)
+db.subscribers.deleteMany({});
+
+// Insert test subscriber with inventory
+db.subscribers.insertOne({
+  _id: ObjectId("6245ada248968bf20c9296f0"),
+  name: "Test Subscriber",
+  email: "test@example.com",
+  inventory: [
+    {
+      type: "Component",
+      vendorItemNumber: "VEN-001",
+      ourItemNumber: "OUR-001",
+      description: "Resistor 10k Ohm 1/4W",
+      unitOfMeasure: "piece",
+      cost: 0.15,
+      created: new Date("2022-04-01"),
+      isActive: true
+    },
+    {
+      type: "Component",
+      vendorItemNumber: "VEN-002",
+      ourItemNumber: "OUR-002",
+      description: "Capacitor 100uF 25V",
+      unitOfMeasure: "piece",
+      cost: 0.45,
+      created: new Date("2022-04-02"),
+      isActive: true
+    },
+    {
+      type: "Component",
+      vendorItemNumber: "VEN-003",
+      ourItemNumber: "OUR-003",
+      description: "LED Red 5mm",
+      unitOfMeasure: "piece",
+      cost: 0.25,
+      created: new Date("2022-04-03"),
+      isActive: true
+    },
+    {
+      type: "Module",
+      vendorItemNumber: "VEN-004",
+      ourItemNumber: "OUR-004",
+      description: "Arduino Nano Board",
+      unitOfMeasure: "unit",
+      cost: 12.50,
+      created: new Date("2022-04-04"),
+      isActive: true
+    },
+    {
+      type: "Component",
+      vendorItemNumber: "VEN-005",
+      ourItemNumber: "OUR-005",
+      description: "Breadboard 830 Points",
+      unitOfMeasure: "unit",
+      cost: 5.99,
+      created: new Date("2022-04-05"),
+      isActive: false
+    }
+  ],
+  createdAt: new Date(),
+  updatedAt: new Date()
+});
+
+// Verify insertion
+db.subscribers.findOne({ _id: ObjectId("6245ada248968bf20c9296f0") });
+
+// Test the aggregate query (same as the fixed Node.js code)
+db.subscribers.aggregate([
+  { $match: { _id: ObjectId("6245ada248968bf20c9296f0") } },
+  { $project: { inventory: 1 } },
+  { $unwind: { path: "$inventory" } },
+  {
+    $project: {
+      type: "$inventory.type",
+      vendorItemNumber: "$inventory.vendorItemNumber",
+      ourItemNumber: "$inventory.ourItemNumber",
+      description: "$inventory.description",
+      unitOfMeasure: "$inventory.unitOfMeasure",
+      cost: "$inventory.cost",
+      created: "$inventory.created",
+      isActive: "$inventory.isActive"
+    }
+  }
+]);
+
+// Expected output: 5 inventory documents with the required fields
